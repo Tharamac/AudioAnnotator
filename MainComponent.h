@@ -21,6 +21,7 @@
 
 //[Headers]     -- You can add your own extra header files here --
 #include <JuceHeader.h>
+
 //[/Headers]
 
 
@@ -34,7 +35,8 @@
                                                                     //[/Comments]
 */
 class MainComponent  : public juce::AudioAppComponent,
-                       public juce::ChangeListener
+                       public juce::ChangeListener,
+                        private juce::Timer
 {
 public:
     //==============================================================================
@@ -46,6 +48,8 @@ public:
     //[/UserMethods]
 
     void paint (juce::Graphics& g) override;
+    void paintIfNoFileLoaded(juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds);
+    void paintIfFileLoaded(juce::Graphics& g, const juce::Rectangle<int>& thumbnailBounds);
     void resized() override;
    
 
@@ -63,7 +67,7 @@ private:
         Paused,
         Stopping
     };
-
+    void timerCallback() override;
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;
     void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override;
     void changeState(TransportState newState);
@@ -79,11 +83,13 @@ private:
     std::unique_ptr<juce::TextButton> pauseButton;
 
     std::unique_ptr<juce::FileChooser> chooser;
+
     juce::AudioFormatManager formatManager;
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
     juce::AudioTransportSource transportSource;
     TransportState state;
-
+    juce::AudioThumbnailCache thumbnailCache;                  // [1]
+    juce::AudioThumbnail thumbnail;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
